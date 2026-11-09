@@ -1,0 +1,16 @@
+# Ambiente virtual (cada pessoa recria o seu a partir do requirements.txt)
+.venv/
+
+# Cache do Python
+__pycache__/
+*.py[cod]
+
+# Checkpoints do Jupyter
+.ipynb_checkpoints/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Variáveis de ambiente / segredos
+.env

@@ -1,0 +1,19 @@
+# Versões fixadas (==) para garantir reprodutibilidade:
+# qualquer pessoa que instalar este arquivo obtém exatamente o mesmo ambiente.
+
+# Manipulação e análise de dados
+pandas==3.0.6
+numpy==2.5.3
+
+# Leitura/escrita de Parquet (camadas prata e ouro): preserva os tipos das colunas
+pyarrow==25.0.1
+
+# Visualização
+matplotlib==3.11.2
+seaborn==0.13.2
+
+# Machine Learning
+scikit-learn==1.9.1
+
+# Execução de notebooks no VS Code (kernel Jupyter)
+ipykernel==7.4.0
