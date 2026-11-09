@@ -1,0 +1,2 @@
+# Camada bronze: o Git não converte quebras de linha (o arquivo fica idêntico ao original)
+data/bronze/** -text
