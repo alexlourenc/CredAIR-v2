@@ -14,3 +14,7 @@ Thumbs.db
 
 # Variáveis de ambiente / segredos
 .env
+
+# Camadas prata e ouro são geradas pelo notebook (recriáveis a partir da bronze)
+data/silver/
+data/gold/
