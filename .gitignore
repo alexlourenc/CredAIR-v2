@@ -18,3 +18,8 @@ Thumbs.db
 # Camadas prata e ouro são geradas pelo notebook (recriáveis a partir da bronze)
 data/silver/
 data/gold/
+
+
+# Metadados do pacote instalado em modo editável e cache do pytest
+*.egg-info/
+.pytest_cache/

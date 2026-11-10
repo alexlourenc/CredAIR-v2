@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "credair"
+version = "0.1.0"
+description = "Limpeza, engenharia de atributos e modelagem de risco de crédito da CredAIR"
+requires-python = ">=3.12"
+dependencies = [
+    "pandas==3.0.6",
+    "numpy==2.5.3",
+    "scikit-learn==1.9.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
