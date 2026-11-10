@@ -66,6 +66,9 @@
   .tag.baixo { background: var(--verde-fundo); color: var(--verde); }
   .erro { color: var(--vermelho); }
   footer { color: var(--suave); font-size: .8rem; margin-top: 24px; }
+  footer p { margin: 0 0 10px; }
+  footer .autor { padding-top: 10px; border-top: 1px solid var(--borda); }
+  footer a { color: var(--azul); }
   @media (max-width: 480px) { .fator { grid-template-columns: 120px 1fr; } }
 </style>
 </head>
@@ -102,9 +105,11 @@
   <div id="comparativo" class="cartao" hidden></div>
 
   <footer>
-    Modelos de regressão logística treinados com 80% da base; os números de desempenho vêm dos 20% de teste.
+    <p>Modelos de regressão logística treinados com 80% da base; os números de desempenho vêm dos 20% de teste.
     O limiar sugerido maximiza o F1 no treino e deve ser revisto com os custos reais do negócio.
-    Ferramenta de demonstração: não substitui uma política de crédito.
+    Ferramenta de demonstração: não substitui uma política de crédito.</p>
+    <p class="autor">Desenvolvido por Alex Lourenço ·
+      <a href="https://github.com/alexlourenc" target="_blank" rel="noopener">Conheça meus outros projetos ↗</a></p>
   </footer>
 </main>
 
