@@ -7,11 +7,15 @@ name = "credair"
 version = "0.1.0"
 description = "Limpeza, engenharia de atributos e modelagem de risco de crédito da CredAIR"
 requires-python = ">=3.12"
+# Dependências do pacote, com as mesmas versões do requirements.txt. O Vercel instala só as
+# obrigatórias: o simulador não usa o scikit-learn, que estouraria o limite de tamanho da função.
 dependencies = [
     "pandas==3.0.6",
     "numpy==2.5.3",
-    "scikit-learn==1.9.1",
 ]
+
+[project.optional-dependencies]
+modelo = ["scikit-learn==1.9.1"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
