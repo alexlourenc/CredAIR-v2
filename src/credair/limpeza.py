@@ -39,6 +39,8 @@ def limpar(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     df["escolaridade"] = pd.Categorical(df["escolaridade"], categories=ORDEM_ESCOLARIDADE, ordered=True)
     df["estado"] = df["estado"].astype("category")
     df["finalidade"] = df["finalidade"].astype("category")
-    df[ALVO] = df[ALVO].astype("int8")
+    if ALVO in df:  # proposta nova (simulador) ainda não tem o alvo
+        df[ALVO] = df[ALVO].astype("int8")
+
 
     return df, pd.DataFrame(log, columns=["problema", "tratamento", "registros"])

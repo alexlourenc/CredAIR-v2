@@ -18,3 +18,4 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]  # permite importar a função do Vercel (api/simular.py) nos testes
