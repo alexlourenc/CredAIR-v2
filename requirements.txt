@@ -15,6 +15,9 @@ seaborn==0.13.2
 # Machine Learning
 scikit-learn==1.9.1
 
+# Estatística: teste qui-quadrado do notebook (seção 4.4)
+scipy==1.18.1
+
 # Execução de notebooks no VS Code (kernel Jupyter)
 ipykernel==7.4.0
 

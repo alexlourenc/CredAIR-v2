@@ -22,4 +22,4 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]  # permite importar a função do Vercel (api/simular.py) nos testes
+pythonpath = ["src", "."]  # pacote credair e função do Vercel (api/simular.py), mesmo sem pip install -e .
