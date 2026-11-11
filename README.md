@@ -9,13 +9,15 @@ Projeto de Ciência de Dados que usa o histórico de propostas de crédito da **
 
 ## Principais resultados
 
-| Modelo | ROC-AUC (teste) | Recall da classe inadimplente |
-|---|---|---|
-| Referência: classe majoritária | 0,500 | 0% |
-| Referência: só score de crédito | 0,695 | 24% |
-| **Regressão Logística (8 variáveis)** | **0,781** | **74%** (limiar 0,31) |
+| Modelo | ROC-AUC (teste) | Limiar 0,5: recall · precisão | Limiar sugerido: recall · precisão · propostas sinalizadas |
+|---|---|---|---|
+| Referência: classe majoritária | 0,500 | 0% · — | — |
+| Referência: só score de crédito | 0,695 | 24% · 58% | 0,26: 86% · 43% · 68% |
+| **Regressão Logística (8 variáveis)** | **0,781** | **45% · 68%** | **0,31: 74% · 56% · 45%** |
 
-- **Fator de risco mais forte:** `comprometimento_renda`, a variável criada no projeto, que mede a fração da renda comprometida com a parcela. Odds ratio de 2,78 por desvio-padrão. Ela eleva a AUC da validação cruzada de 0,769 para 0,793.
+Números do conjunto de teste; recall e precisão são da classe inadimplente. No **mesmo limiar (0,5)**, o modelo identifica quase o dobro de inadimplentes que a regra do score, com mais precisão. No limiar sugerido de cada um, a regra do score pega mais inadimplentes só porque sinaliza 68% de todas as propostas.
+
+- **Fator de risco mais forte:** `comprometimento_renda`, a variável criada no projeto, que mede a fração da renda comprometida com a parcela. Odds ratio de 2,78 por desvio-padrão. Na validação cruzada, com só variáveis numéricas, como no modelo final, ela eleva a AUC de 0,771 para 0,794.
 - **Fator de proteção mais forte:** `score_credito`. Odds ratio de 0,44 por desvio-padrão.
 - **O "paradoxo do prazo":** prazos curtos têm mais inadimplência porque geram parcelas pesadas. Descontado o comprometimento da renda, o efeito do prazo inverte o sinal.
 - `estado`, `escolaridade` e `finalidade` não mostraram associação significativa e ficaram fora do modelo final.
@@ -87,7 +89,7 @@ Depois, abra `notebooks/analise_credito.ipynb` no VS Code, selecione o kernel do
 pytest
 ```
 
-São 45 testes: cada regra de limpeza e de engenharia de atributos, os resultados publicados acima (ROC-AUC de 0,781 e limiar de 0,31) e a equivalência entre o simulador e o scikit-learn. Eles também rodam automaticamente no GitHub a cada push.
+São 73 testes: cada regra de limpeza e de engenharia de atributos, os resultados publicados acima (ROC-AUC de 0,781 e limiar de 0,31), a equivalência entre o simulador e o scikit-learn e a validação das propostas novas. Eles também rodam automaticamente no GitHub a cada push.
 
 ## Simulador de propostas
 

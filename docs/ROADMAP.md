@@ -71,7 +71,7 @@ Cada decisão importante fica registrada com o contexto, a escolha feita e o mot
 
 ### D08 — Variável derivada `comprometimento_renda`
 - **Construção:** `(valor_solicitado / prazo_meses) / renda_mensal`, a fração da renda comprometida com a parcela, sem juros.
-- **Motivo:** explica o "paradoxo do prazo". É a 2ª variável mais discriminante sozinha (AUC 0,667), à frente das três que combina, e eleva a AUC do modelo de 0,769 para 0,793 na validação cruzada.
+- **Motivo:** explica o "paradoxo do prazo". É a 2ª variável mais discriminante sozinha (AUC 0,667), à frente das três que combina. Na validação cruzada, eleva a AUC de 0,769 para 0,793 com escolaridade e finalidade no modelo, e de 0,771 para 0,794 só com variáveis numéricas, a configuração do modelo final.
 - **Descartadas:** `valor_sobre_renda` (correlação 0,69 com a escolhida e ignora o prazo) e `parcela_estimada` (mais fraca e ignora a renda).
 
 ### D09 — `estado` excluído do modelo
@@ -84,7 +84,7 @@ Cada decisão importante fica registrada com o contexto, a escolha feita e o mot
 - **Motivo:** escolher o modelo pelo teste o tornaria otimista. Validação cruzada estratificada com 5 partes no treino, métrica ROC-AUC (independe do limiar).
 
 ### D12 — Limiar de decisão escolhido no treino (F1 máximo nas previsões fora da amostra)
-- **Resultado:** limiar de 0,31. No teste, o recall sobe de 45% para 74% e a precisão cai de 68% para 56%.
+- **Resultado:** limiar de 0,31. No teste, o recall sobe de 45,2% para 73,8% e a precisão cai de 67,7% para 55,8% (arredondados, 45% → 74% e 68% → 56%). A tabela ilustrativa do notebook, no limiar 0,30, mostra 55,0%: são limiares diferentes.
 - **Motivo:** o falso negativo (aprovar um mau pagador) é o erro mais caro. O limiar final é uma **decisão de negócio** e deve ser revisto com os custos reais.
 
 ### D13 — Regras do notebook consolidadas no pacote `credair`
@@ -98,3 +98,18 @@ Cada decisão importante fica registrada com o contexto, a escolha feita e o mot
 ### D15 — Simulador com limiar ajustável e versões validadas, sem seleção livre de variáveis
 - **Decisão:** a página permite ajustar o limiar (mostrando recall, precisão e % de propostas sinalizadas no teste) e comparar três versões já validadas na seção 7: modelo final, sem `comprometimento_renda` e só score.
 - **Motivo:** o limiar é uma decisão de negócio, e o simulador deixa essa troca visível. A escolha livre de variáveis foi descartada: exigiria treinar no servidor e permitiria modelos não validados, inclusive com `estado`.
+
+### D16 — Proposta nova é validada, e não "limpa" com as regras P3 a P5
+- **Contexto (revisão externa):** o simulador reaproveitava a `limpar()` inteira. Numa proposta nova, a regra P5 trocava uma renda abaixo de R$ 600 pela mediana do treino, e quem ganhava menos recebia **menos** risco: com valor de R$ 30 mil em 6 meses, renda de R$ 650 dava 100% de risco e renda de R$ 599, 28%. Entradas impossíveis (idade 16, valor negativo, prazo `NaN`, renda infinita) também passavam sem erro.
+- **Decisão:** a `limpar()` ganhou o parâmetro `marcar_invalidos` (padrão `True`, o comportamento do notebook, sem mudança). O simulador chama `limpar(..., marcar_invalidos=False)`, depois de uma `validar_proposta()` que recusa com `ValueError` (HTTP 400 na API) qualquer campo não numérico ou não finito, idade fora de 18 a 100, renda ou valor ≤ 0, tempo de emprego negativo ou ≥ idade, score fora de 0 a 1000, prazo < 1 e dívidas que não sejam um inteiro ≥ 0.
+- **Por que essa opção:** é a mais simples. Na base, P3 a P5 corrigem valores **artificiais**; numa proposta, um valor fora da faixa é **erro de digitação** (recusado) ou um dado **real** (usado como informado). Uma renda baixa precisa contar como renda baixa.
+- **Avisos:** os antigos avisos de P3 a P5 saíram. No lugar, o simulador avisa quando um campo válido está **fora da faixa vista no treino** (por exemplo, renda abaixo de R$ 900 ou prazo acima de 60 meses): o modelo responde, mas extrapola.
+- **Sem mudança no modelo:** variáveis, pipeline, divisão e semente continuam iguais; o `api/modelos.json` regenerado é idêntico, e AUC 0,781 e limiar 0,31 se mantêm.
+- **Testes:** a probabilidade nunca cai quando a renda cai (3.000, 1.000, 650, 599 e 300); renda de R$ 599 dá alto risco; o comprometimento é sempre calculado; um teste parametrizado cobre cada regra de validação, e a API devolve 400 para idade 16, valor negativo e prazo `NaN`.
+
+## Próximos passos (fora do escopo, porque mudariam os resultados publicados)
+- `comprometimento_renda` é muito assimétrica (mediana 0,11, máximo 4,02): testar logaritmo ou um teto na validação cruzada.
+- Explicar o odds ratio em unidades de negócio (por exemplo, por +10 pontos percentuais de comprometimento), e não só por desvio-padrão.
+- Verificar a calibração das probabilidades (curva de calibração), já que o simulador mostra a probabilidade em destaque.
+- Escolher o limiar por custo (por exemplo, falso negativo = 5× falso positivo) em vez de F1.
+- Intervalo de confiança da AUC de teste por *bootstrap*: o teste tem só 997 propostas.
