@@ -20,7 +20,7 @@ Projeto de Ciência de Dados que usa o histórico de propostas de crédito da **
 - **O "paradoxo do prazo":** prazos curtos têm mais inadimplência porque geram parcelas pesadas. Descontado o comprometimento da renda, o efeito do prazo inverte o sinal.
 - `estado`, `escolaridade` e `finalidade` não mostraram associação significativa e ficaram fora do modelo final.
 
-Detalhes no [notebook](notebooks/analise_credito.ipynb) e no [registro de decisões](docs/ROADMAP.md).
+Detalhes no [notebook](notebooks/analise_credito.ipynb), no [registro de decisões](docs/ROADMAP.md) e nos [slides da apresentação](docs/apresentacao.pdf) (PDF).
 
 ## Estrutura do projeto
 

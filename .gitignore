@@ -23,3 +23,6 @@ data/gold/
 # Metadados do pacote instalado em modo editável e cache do pytest
 *.egg-info/
 .pytest_cache/
+
+# Roteiro pessoal da apresentação (fica só no computador)
+docs/APRESENTACAO.md
