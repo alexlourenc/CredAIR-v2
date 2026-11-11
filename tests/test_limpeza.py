@@ -22,6 +22,14 @@ def test_valores_invalidos_viram_ausentes(propostas):
     assert limpo.loc[1, "score_credito"] == 550
 
 
+def test_sem_marcar_invalidos_mantem_os_valores(propostas):
+    # Modo do simulador (D16): P1 e P2 continuam, P3 a P5 não anulam nada
+    limpo, log = limpar(propostas, marcar_invalidos=False)
+    assert limpo.loc[2, "renda_mensal"] == 300
+    assert limpo.loc[1, "idade"] == 250
+    assert set(log["problema"]) == {"P1", "P2"}
+
+
 def test_tipos_da_camada_prata(propostas):
     limpo, _ = limpar(propostas)
     assert list(limpo["escolaridade"].cat.categories) == ORDEM_ESCOLARIDADE

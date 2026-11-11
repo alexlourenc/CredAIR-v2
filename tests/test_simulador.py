@@ -51,12 +51,12 @@ def test_usa_os_resultados_do_notebook(parametros):
 
 @pytest.mark.parametrize("versao", list(VERSOES))
 @pytest.mark.parametrize("ajuste", [{}, {"score_credito": 400, "dividas_ativas": 5},
-                                    {"idade": 250, "renda_mensal": 300}, {"prazo_meses": 6}])
+                                    {"renda_mensal": 300}, {"prazo_meses": 6}])
 def test_mesma_probabilidade_do_scikit_learn(treinados, parametros, versao, ajuste):
     # A conta feita com os parâmetros exportados reproduz o pipeline treinado
     proposta = {**PROPOSTA, **ajuste}
     bronze = pd.DataFrame([proposta]).assign(estado=None, escolaridade=None, finalidade=None)
-    ouro = criar_atributos(limpar(bronze)[0])
+    ouro = criar_atributos(limpar(bronze, marcar_invalidos=False)[0])
     variaveis = VERSOES[versao][1]
     esperado = treinados[versao].predict_proba(ouro[variaveis])[0, 1]
     assert avaliar(proposta, parametros, versao)["probabilidade"] == pytest.approx(esperado)
@@ -109,21 +109,53 @@ def test_desempenho_do_limiar_vem_da_curva(parametros):
     assert baixo["recall"] > ponto["recall"]
 
 
-def test_aplica_a_limpeza_do_notebook(parametros):
-    # P3 e P5: idade de 250 anos e renda de R$ 300 viram ausentes e o modelo usa a mediana
-    r = avaliar({**PROPOSTA, "idade": 250, "renda_mensal": 300}, parametros)
+# Proposta da revisão (D16): parcela pesada, em que só a renda varia
+PESADA = {"idade": 30, "tempo_emprego_anos": 5, "score_credito": 650, "valor_solicitado": 30000,
+          "prazo_meses": 6, "dividas_ativas": 2}
+
+
+def test_renda_menor_nunca_reduz_o_risco(parametros):
+    # Com os outros campos fixos, a probabilidade não diminui quando a renda cai
+    probs = [avaliar({**PESADA, "renda_mensal": r}, parametros)["probabilidade"] for r in (3000, 1000, 650, 599, 300)]
+    assert all(depois >= antes for antes, depois in zip(probs, probs[1:]))
+
+
+def test_renda_abaixo_de_600_e_usada_como_informada(parametros):
+    # Na base, a regra P5 anulava rendas artificiais; numa proposta nova, a renda baixa conta como renda baixa
+    r = avaliar({**PESADA, "renda_mensal": 599}, parametros)
+    assert r["alto_risco"]
+    assert r["comprometimento_renda"] == pytest.approx(5000 / 599)
+
+
+@pytest.mark.parametrize("renda", [300, 599, 3000, 40000])
+def test_comprometimento_sempre_calculado(parametros, renda):
+    assert avaliar({**PROPOSTA, "renda_mensal": renda}, parametros)["comprometimento_renda"] is not None
+
+
+def test_avisa_fora_da_faixa_do_treino(parametros):
+    # Renda de R$ 300 e prazo de 72 meses são válidos, mas o modelo nunca viu valores assim
+    r = avaliar({**PROPOSTA, "renda_mensal": 300, "prazo_meses": 72}, parametros)
     assert len(r["avisos"]) == 2
-    assert r["comprometimento_renda"] is None
-    assert 0 < r["probabilidade"] < 1
+    assert avaliar(PROPOSTA, parametros)["avisos"] == []
 
 
-@pytest.mark.parametrize("proposta, versao, limiar", [
-    ({**PROPOSTA, "idade": None}, None, None),
-    ({**PROPOSTA, "prazo_meses": 0}, None, None),
-    ({**PROPOSTA, "renda_mensal": "abc"}, None, None),
-    (PROPOSTA, "estado", None),
-    (PROPOSTA, None, 1.5),
+@pytest.mark.parametrize("ajuste", [
+    {"idade": 17}, {"idade": 101}, {"idade": float("nan")},
+    {"renda_mensal": 0}, {"renda_mensal": -100}, {"renda_mensal": float("inf")},
+    {"tempo_emprego_anos": -1}, {"tempo_emprego_anos": 30},
+    {"score_credito": -1}, {"score_credito": 1001},
+    {"valor_solicitado": 0}, {"valor_solicitado": -5000}, {"valor_solicitado": float("-inf")},
+    {"prazo_meses": 0}, {"prazo_meses": float("nan")},
+    {"dividas_ativas": -1}, {"dividas_ativas": 1.5},
+    {"idade": None}, {"renda_mensal": "abc"}, {"dividas_ativas": True},
 ])
-def test_rejeita_pedido_invalido(parametros, proposta, versao, limiar):
+def test_rejeita_proposta_impossivel(parametros, ajuste):
+    # Cada regra de validação (D16) recusa a proposta com ValueError
     with pytest.raises(ValueError):
-        avaliar(proposta, parametros, versao, limiar)
+        avaliar({**PROPOSTA, **ajuste}, parametros)
+
+
+@pytest.mark.parametrize("versao, limiar", [("estado", None), (None, 1.5), (None, 0)])
+def test_rejeita_versao_ou_limiar_invalido(parametros, versao, limiar):
+    with pytest.raises(ValueError):
+        avaliar(PROPOSTA, parametros, versao, limiar)

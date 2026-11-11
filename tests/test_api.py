@@ -48,7 +48,11 @@ def test_sem_versao_usa_o_modelo_final(url):
     assert enviar(url, PROPOSTA)["versao"] == "final"
 
 
-@pytest.mark.parametrize("dados", [{**PROPOSTA, "prazo_meses": 0}, {**PROPOSTA, "versao": "estado"}, [1, 2]])
+@pytest.mark.parametrize("dados", [
+    {**PROPOSTA, "prazo_meses": 0}, {**PROPOSTA, "versao": "estado"}, [1, 2],
+    # D16: o json.dumps envia NaN como o literal NaN, que o json.loads do servidor aceita
+    {**PROPOSTA, "idade": 16}, {**PROPOSTA, "valor_solicitado": -5000}, {**PROPOSTA, "prazo_meses": float("nan")},
+])
 def test_rejeita_pedido_invalido(url, dados):
     with pytest.raises(urllib.error.HTTPError) as erro:
         enviar(url, dados)

@@ -5,7 +5,7 @@ import pandas as pd
 from credair.config import ALVO, ORDEM_ESCOLARIDADE
 
 
-def limpar(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+def limpar(df: pd.DataFrame, marcar_invalidos: bool = True) -> tuple[pd.DataFrame, pd.DataFrame]:
     # Aplica as regras de limpeza e devolve (dados_limpos, log_de_tratamentos)
     df = df.copy()
     log = []
@@ -19,6 +19,23 @@ def limpar(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     antes = len(df)
     df = df.drop_duplicates(keep="first").reset_index(drop=True)
     log.append(("P2", "Linhas duplicadas removidas", antes - len(df)))
+
+    # P3 a P5 corrigem valores artificiais da base; uma proposta nova chega validada e é usada como informada (D16)
+    if marcar_invalidos:
+        df = _marcar_invalidos(df, log)
+
+    # Tipos: categorias explícitas (escolaridade é ordinal)
+    df["escolaridade"] = pd.Categorical(df["escolaridade"], categories=ORDEM_ESCOLARIDADE, ordered=True)
+    df["estado"] = df["estado"].astype("category")
+    df["finalidade"] = df["finalidade"].astype("category")
+    if ALVO in df:  # proposta nova (simulador) ainda não tem o alvo
+        df[ALVO] = df[ALVO].astype("int8")
+
+    return df, pd.DataFrame(log, columns=["problema", "tratamento", "registros"])
+
+
+def _marcar_invalidos(df: pd.DataFrame, log: list) -> pd.DataFrame:
+    # Regras P3 a P5: valores impossíveis ou artificiais viram ausentes (imputados depois, no pipeline)
 
     # P3 — idade fora do intervalo plausível vira ausente
     invalida = ~df["idade"].between(18, 100)
@@ -34,13 +51,4 @@ def limpar(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     invalida = df["renda_mensal"] < 600
     df["renda_mensal"] = df["renda_mensal"].mask(invalida)
     log.append(("P5", "Renda < R$ 600 → ausente", int(invalida.sum())))
-
-    # Tipos: categorias explícitas (escolaridade é ordinal)
-    df["escolaridade"] = pd.Categorical(df["escolaridade"], categories=ORDEM_ESCOLARIDADE, ordered=True)
-    df["estado"] = df["estado"].astype("category")
-    df["finalidade"] = df["finalidade"].astype("category")
-    if ALVO in df:  # proposta nova (simulador) ainda não tem o alvo
-        df[ALVO] = df[ALVO].astype("int8")
-
-
-    return df, pd.DataFrame(log, columns=["problema", "tratamento", "registros"])
+    return df

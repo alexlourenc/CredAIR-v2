@@ -79,11 +79,11 @@
 
   <form id="form" class="cartao">
     <div class="campos">
-      <label>Idade<span>anos</span><input name="idade" type="number" step="1" value="35" required></label>
-      <label>Renda mensal<span>R$</span><input name="renda_mensal" type="number" step="0.01" value="4500" required></label>
-      <label>Tempo de emprego<span>anos</span><input name="tempo_emprego_anos" type="number" step="1" min="0" value="6" required></label>
+      <label>Idade<span>18 a 100 anos</span><input name="idade" type="number" step="1" min="18" max="100" value="35" required></label>
+      <label>Renda mensal<span>R$</span><input name="renda_mensal" type="number" step="0.01" min="0.01" value="4500" required></label>
+      <label>Tempo de emprego<span>anos, menos que a idade</span><input name="tempo_emprego_anos" type="number" step="1" min="0" value="6" required></label>
       <label>Score de crédito<span>335 a 850 na base</span><input name="score_credito" type="number" step="1" min="0" max="1000" value="650" required></label>
-      <label>Valor solicitado<span>R$</span><input name="valor_solicitado" type="number" step="0.01" min="0" value="15000" required></label>
+      <label>Valor solicitado<span>R$</span><input name="valor_solicitado" type="number" step="0.01" min="0.01" value="15000" required></label>
       <label>Prazo<span>meses</span><input name="prazo_meses" type="number" step="1" min="1" value="36" required></label>
       <label>Dívidas ativas<span>quantidade</span><input name="dividas_ativas" type="number" step="1" min="0" value="1" required></label>
     </div>
@@ -184,7 +184,7 @@
               <div class="barra"><i style="${lado};width:${largura}%"></i></div></div>`;
     }).join("");
     const avisos = r.avisos.length
-      ? `<div class="avisos">Valores tratados como ausentes pela limpeza (o modelo usa a mediana da base):
+      ? `<div class="avisos">Atenção, o modelo está extrapolando (resultado menos confiável):
          ${r.avisos.map(esc).join("; ")}.</div>` : "";
     const d = r.desempenho;
     caixa.hidden = false;
